@@ -13,6 +13,16 @@ image.opacity = .5
 image.x = 320 - image.width/2
 image.y = 240 - image.height/2
 image2 = pyglet.image.load('img/frame.PNG')
+frame = image2.get_region(0, 0, 109, 321)
+xas = 0
+def sumx():
+	global xas
+	xas = (xas + 1) % 5
+
+
+# Testes com muzisquinha
+music = pyglet.resource.media('rola.mp3')
+music.play()
 
 # sei la o que eh "dx" e "dy"
 @window.event
@@ -37,7 +47,9 @@ def on_key_press(symbol, modifiers):
 @window.event
 def on_draw():
 	window.clear()
-	image2.blit(320 - image2.width/2, 240-image2.height/2)
+	sumx()
+	frame = image2.get_region(109 * xas, 0, 109, 321)
+	frame.blit(320 - image2.width/2, 240-image2.height/2)
 	image.blit(image.x, image.y)
 
 # Principalzinho =)
