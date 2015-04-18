@@ -3,9 +3,8 @@ from pyglet.image.codecs.png import PNGImageDecoder
 from pyglet.window import mouse
 from pyglet.window import key
 
-window = pyglet.window.Window()
-window.set_caption("Pau frito")
-window.set_size(640, 480)
+window = pyglet.window.Window(640, 480)
+window.set_caption("Steroids")
 window.set_mouse_visible(False)
 
 # Soh declarando azibagem
@@ -16,6 +15,8 @@ image.y = 240 - image.height/2
 image2 = pyglet.image.load('img/frame.PNG', decoder=PNGImageDecoder())
 frame = image2.get_region(0, 0, 109, 321)
 xas = 0
+
+# Sonzinhos
 porrada = pyglet.resource.media('snd/punchVladimir.wav', streaming=False)
 
 def sumx():
