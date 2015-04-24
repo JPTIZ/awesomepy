@@ -23,7 +23,7 @@ frame = image2.get_region(0, 0, 109, 321)
 xas = 0
 
 # Sonzinhos
-porrada = pyglet.media.load('snd/punchVladimir.wav', streaming=False)
+# porrada = pyglet.media.load('snd/punchVladimir.wav', streaming=False)
 
 fps_display = pyglet.clock.ClockDisplay()
 
@@ -40,8 +40,8 @@ class SoundManager:
         # player.play()
 
 
-sfxplayer = SoundManager()
-musicplayer = SoundManager()
+# sfxplayer = SoundManager()
+# musicplayer = SoundManager()
 
 def sumx():
     global xas
@@ -49,8 +49,8 @@ def sumx():
 
 
 # Testes com muzisquinha
-music = pyglet.media.load('bgm/Johnny.mp3')
-musicplayer.play(music)
+# music = pyglet.media.load('bgm/Johnny.mp3')
+# musicplayer.play(music)
 
 @window.event
 def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
