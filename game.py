@@ -65,22 +65,25 @@ class Sprite:
         self.bitmap = pyglet.image.load(filename, decoder=PNGImageDecoder())
         self.x = 0
         self.y = 0
+        self.ox = 0
+        self.oy = 0
         self.angle = 0
         self.visible = True
 
     def update(self, window):
         if not self.visible:
             return
-        trueX = self.x * window.x_proportion
-        trueY = (SIZE[1] - (self.y+self.bitmap.height)) * window.y_proportion
-        glTranslatef(self.x, self.y, 0)
-        glRotatef(self.angle, 0, 0, 1)
-        self.bitmap.blit(trueX,
-                         trueY,
-                         width=self.bitmap.width*window.x_proportion,
-                         height=self.bitmap.height*window.y_proportion)
+        trueX = (self.x) * window.x_proportion
+        trueY = (SIZE[1] - (self.y + self.bitmap.height)) * window.y_proportion
+        glTranslatef(trueX, trueY, 0)
         glRotatef(-self.angle, 0, 0, 1)
-        glTranslatef(-self.x, -self.y, 0)
+        self.bitmap.blit(-self.ox,-self.oy,width=self.bitmap.width*window.x_proportion, height=self.bitmap.height*window.y_proportion)
+        #self.bitmap.blit(trueX,
+        #                 trueY,
+        #                 width=self.bitmap.width*window.x_proportion,
+        #                 height=self.bitmap.height*window.y_proportion)
+        glRotatef(+self.angle, 0, 0, 1)
+        glTranslatef(-trueX, -trueY, 0)
 
 
 class SceneBase:

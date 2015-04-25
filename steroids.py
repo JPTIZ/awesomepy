@@ -3,6 +3,7 @@ import pyglet
 from pyglet import clock
 from pyglet.gl import *
 from pyglet.window import key
+import math
 # Imports internos
 import game
 from game import Window
@@ -10,7 +11,7 @@ from game import SoundManager
 from game import Sprite
 from game import keys
 
-pyglet.options['audio'] = ('alsa', 'openal', 'silent')
+pyglet.options['audio'] = ('directsound', 'alsa', 'openal', 'silent')
 
 # -----------------------------------------------------------------------------
 # Cenas do jogo
@@ -54,31 +55,30 @@ class SceneStage1(game.SceneBase):
     def __init__(self):
         self.background = Sprite('img/titleBackground.png')
         self.player = Sprite('img/player.png')
+        self.player.x = 320
+        self.player.y = 240
+        self.player.ox = self.player.bitmap.width/2
+        self.player.oy = self.player.bitmap.height/2
+        self.player_speed = 5
         music_player.play(pyglet.media.load('bgm/stage1.mp3'))
         print("Iniciou primeiro estágio")
 
     def update(self):
         if str(key.RIGHT) in keys:
-            self.player.angle += 1
+            self.player.angle += self.player_speed
         if str(key.LEFT) in keys:
-            self.player.angle -= 1
+            self.player.angle -= self.player_speed
         if str(key.UP) in keys:
-            self.player.y -= 1
+            self.player.x -= self.player_speed*math.sin(-self.player.angle*math.pi/180)
+            self.player.y -= self.player_speed*math.cos(-self.player.angle*math.pi/180)
         if str(key.DOWN) in keys:
-            self.player.y += 1
+            self.player.x += self.player_speed*math.sin(-self.player.angle*math.pi/180)
+            self.player.y += self.player_speed*math.cos(-self.player.angle*math.pi/180)
         self.background.update(window)
         self.player.update(window)
 
     def on_key_press(self, symbol, modifiers):
-        print("Pressou teclinha")
-        if symbol == key.RIGHT:
-            self.player.x += 1
-        if symbol == key.LEFT:
-            self.player.x -= 1
-        if symbol == key.UP:
-            self.player.y -= 1
-        if symbol == key.DOWN:
-            self.player.y += 1
+        pass
 
 # -----------------------------------------------------------------------------
 # Processo principal do jogo
