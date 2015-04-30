@@ -6,12 +6,19 @@ from pyglet.window import key
 import math
 # Imports internos
 import game
-from game import Window
-from game import SoundManager
-from game import Sprite
 from game import keys
+from game import Rect
+from game import Sprite
+from game import Window
+from game import SpaceObject
+from game import SoundManager
+from game import SpaceObjectType
 
 pyglet.options['audio'] = ('directsound', 'alsa', 'openal', 'silent')
+
+
+def radial(angle):
+    return angle*math.pi/180
 
 # -----------------------------------------------------------------------------
 # Cenas do jogo
@@ -47,7 +54,7 @@ class SceneTitle(game.SceneBase):
         print("Pressou tecla!")
         if symbol == key.RETURN and self.fadeTime >= 120:
             self.fadeTime -= 1
-            pyglet.media.load('snd/confirm.wav', streaming=False).play()
+            pyglet.media.load('snd/confirm2.wav', streaming=False).play()
 
 
 class SceneStage1(game.SceneBase):
@@ -60,22 +67,41 @@ class SceneStage1(game.SceneBase):
         self.player.ox = self.player.bitmap.width/2
         self.player.oy = self.player.bitmap.height/2
         self.player_speed = 5
+        self.steroid = SpaceObject(0, 0, SpaceObjectType.asteroid, 1, 1)
+        self.steroid.ox = self.steroid.width/2
+        self.steroid.oy = self.steroid.height/2
+        self.steroid.angle = 45
         music_player.play(pyglet.media.load('bgm/stage1.mp3'))
         print("Iniciou primeiro estágio")
 
     def update(self):
+        pass
+        spd = self.player_speed
         if str(key.RIGHT) in keys:
-            self.player.angle += self.player_speed
+            self.player.angle += spd
         if str(key.LEFT) in keys:
-            self.player.angle -= self.player_speed
+            self.player.angle -= spd
         if str(key.UP) in keys:
-            self.player.x -= self.player_speed*math.sin(-self.player.angle*math.pi/180)
-            self.player.y -= self.player_speed*math.cos(-self.player.angle*math.pi/180)
+            self.player.x -= spd*math.sin(-radial(self.player.angle))
+            self.player.y -= spd*math.cos(-radial(self.player.angle))
         if str(key.DOWN) in keys:
-            self.player.x += self.player_speed*math.sin(-self.player.angle*math.pi/180)
-            self.player.y += self.player_speed*math.cos(-self.player.angle*math.pi/180)
+            self.player.x += spd*math.sin(-radial(self.player.angle))
+            self.player.y += spd*math.cos(-radial(self.player.angle))
         self.background.update(window)
-        self.player.update(window)
+        self.player.update(window);
+        # Checa interseção do jogador com o asteróide
+        r1 = Rect(self.player.x,
+             self.player.y,
+             self.player.x + self.player.width,
+             self.player.y + self.player.height)
+        r2 = Rect(self.steroid.x,
+             self.steroid.y,
+             self.steroid.x + self.steroid.width,
+             self.steroid.y + self.steroid.height)
+        if r1.intersects(r2):
+           self.steroid.on_collide_with_player()
+        #self.steroid.angle += 1
+        self.steroid.update(window)
 
     def on_key_press(self, symbol, modifiers):
         pass
