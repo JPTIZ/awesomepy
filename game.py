@@ -1,3 +1,4 @@
+import math
 from enum import Enum
 import pyglet
 from pyglet import clock
@@ -17,9 +18,34 @@ scene = None
 fps_display = clock.ClockDisplay()
 keys = []
 
+def radial(angle):
+    return angle*math.pi/180
+
 # -----------------------------------------------------------------------------
 # Material para estruturação do jogo
 # -----------------------------------------------------------------------------
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, point):
+        if isinstance(point, Point):
+            self.x += point.x
+            self.y += point.y
+            return self
+        else:
+            print("--------Não é ponto =T--------")
+
+    def __sub__(self, point):
+        if isinstance(point, Point):
+            self.x -= point.x
+            self.y -= point.y
+            return self
+        else:
+            print("--------Não é ponto =T--------")
 
 
 class Rect:
@@ -62,17 +88,23 @@ class Rect:
     #
     #--------------------------------------------------------------------------
 
+    def val_escalar(self, point, axis_vector):
+        # print(point)
+        # print("val_escalar - rect_b => "+str(axis_vector))
+        return point.x * axis_vector.x + point.y * axis_vector.y
+
     def intersects_side(self, axis_vector, rect_b):
         # Retângulo A
-        val_escalar11 = val_escalar(self.upleft(), axis_vector)
-        val_escalar12 = val_escalar(self.upright(), axis_vector)
-        val_escalar13 = val_escalar(self.bottomleft(), axis_vector)
-        val_escalar14 = val_escalar(self.bottomright(), axis_vector)
+        # print("intersects_side - rect_b => "+str(rect_b))
+        val_escalar11 = self.val_escalar(self.upleft(), axis_vector)
+        val_escalar12 = self.val_escalar(self.upright(), axis_vector)
+        val_escalar13 = self.val_escalar(self.bottomleft(), axis_vector)
+        val_escalar14 = self.val_escalar(self.bottomright(), axis_vector)
         # Retângulo B
-        val_escalar21 = val_escalar(rect_b.upleft(), axis_vector)
-        val_escalar22 = val_escalar(rect_b.upright(), axis_vector)
-        val_escalar23 = val_escalar(rect_b.bottomleft(), axis_vector)
-        val_escalar24 = val_escalar(rect_b.bottomright(), axis_vector)
+        val_escalar21 = self.val_escalar(rect_b.upleft(), axis_vector)
+        val_escalar22 = self.val_escalar(rect_b.upright(), axis_vector)
+        val_escalar23 = self.val_escalar(rect_b.bottomleft(), axis_vector)
+        val_escalar24 = self.val_escalar(rect_b.bottomright(), axis_vector)
         # Vetorização:
         min_a = min(val_escalar11, val_escalar12, val_escalar13, val_escalar14)
         min_b = min(val_escalar21, val_escalar22, val_escalar23, val_escalar24)
@@ -80,19 +112,52 @@ class Rect:
         max_b = max(val_escalar21, val_escalar22, val_escalar23, val_escalar24)
         return min_b <= max_a or max_b <= min_a
 
-    def intersects(self, rect):
-        return intersects_side(self.upright() - self.upleft(), rect_b) and
-                intersects_side(self.upleft() - self.bottomleft(), rect_b) and
-                intersects_side(self.bottomleft() - self.bottomright(), rect_b) and
-                intersects_side(self.bottomright() - self.upright(), rect_b)
+    def intersects(self, rect_b):
+        side1 = (self.upright() - self.upleft())
+        side2 = (self.upleft() - self.bottomleft())
+        side3 = (self.bottomleft() - self.bottomright())
+        side4 = (self.bottomright() - self.upright())
+        return (self.intersects_side(side1, rect_b) and
+                self.intersects_side(side2, rect_b) and
+                self.intersects_side(side3, rect_b) and
+                self.intersects_side(side4, rect_b))
         #----------------------------------------------------------------------
-        axis = self.upright() - self.upleft();
-        proj_aur_axis = (self.upright() * axis / axis**2)*axis
-        val_escalar =
+        # axis = self.upright() - self.upleft();
+        # proj_aur_axis = (self.upright() * axis / axis**2)*axis
+        # val_escalar =
+        #----------------------------------------------------------------------
         # return not ((self.right < rect.left) or
         #             (self.left > rect.right) or
         #             (self.top > rect.bottom) or
         #             (self.bottom < rect.top))
+
+    def rotated_point(self, point):
+        cx = self.left + self.width()/2
+        cy = self.top + self.height()/2
+        dx = (point.x - cx)
+        dy = (point.y - cy)
+        angle = radial(self.angle)
+        x = dx * math.cos(angle) - dy * math.sin(angle)
+        y = dx * math.sin(angle) + dy * math.cos(angle)
+        return Point(x+cx, y+cy)
+
+    def upright(self):
+        return self.rotated_point(Point(self.right, self.top))
+
+    def upleft(self):
+        return self.rotated_point(Point(self.left, self.top))
+
+    def bottomleft(self):
+        return self.rotated_point(Point(self.left, self.bottom))
+
+    def bottomright(self):
+        return self.rotated_point(Point(self.right, self.bottom))
+
+    def width(self):
+        return self.right - self.left
+
+    def height(self):
+        return self.bottom - self.top
 
 
 class Window(pyglet.window.Window):
@@ -163,7 +228,7 @@ class Sprite:
             return
         trueX = (self.x) * window.x_proportion
         trueY = (SIZE[1] - (self.y + self.bitmap.height)) * window.y_proportion
-        if (self.angle != 0): print("trueXY = ("+str(trueX)+", "+str(trueY)+")")
+        #if (self.angle != 0): print("trueXY = ("+str(trueX)+", "+str(trueY)+")")
         glTranslatef(trueX, trueY, 0)
         glRotatef(-self.angle, 0, 0, 1)
         self.bitmap.blit(-self.ox*window.x_proportion,
@@ -191,7 +256,7 @@ class SpaceObject(Sprite):
         self.y = y
         self.obj_type = obj_type
         if obj_type == SpaceObjectType.asteroid:
-            super(SpaceObject, self).__init__('img/stronda.png')
+            super(SpaceObject, self).__init__('img/stronda_okay.png')
         self.dx = dx
         self.dy = dy
 
